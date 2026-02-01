@@ -79,9 +79,14 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
             {/* 리스트 */}
             <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto pb-20">
                 {notes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                        <p>아직 틀린 문제가 없습니다.</p>
-                        <p className="text-sm mt-2">문제를 풀면 이곳에 쌓입니다.</p>
+                    <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-4">
+                        <p className="font-bold text-gray-600">틀린 문항이 없습니다.</p>
+                        <button
+                            onClick={onBack}
+                            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                        >
+                            홈 바로가기
+                        </button>
                     </div>
                 ) : (
                     notes.map((item) => (

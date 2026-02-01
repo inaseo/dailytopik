@@ -71,11 +71,11 @@ export default function Home() {
 
         {/* 타이틀 영역 */}
         <div className="text-center space-y-1">
-          <span className="px-3 py-1 bg-black text-white text-xs font-bold rounded-full dark:bg-white dark:text-black">TOPIK II</span>
-          <h1 className="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          <span className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full dark:bg-gray-200 dark:text-gray-700">TOPIK II</span>
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
             Daily TOPIK
           </h1>
-          <p className="text-gray-500 font-medium dark:text-gray-400">하루 10문제로 끝내는 한국어 공부</p>
+          <p className="text-gray-700 font-medium dark:text-gray-700">하루 10문제로 끝내는 한국어 공부</p>
         </div>
 
         {/* 메인 액션 버튼 */}
@@ -94,7 +94,7 @@ export default function Home() {
 
           <button
             onClick={() => setScreen("NOTE")}
-            className="w-full h-16 flex items-center justify-center bg-transparent border border-gray-200 text-blue-600 font-bold text-lg rounded-2xl transition-all cursor-pointer dark:border-gray-700 dark:text-blue-500 dark:hover:bg-gray-800/10"
+            className="w-full h-16 flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-lg rounded-2xl transition-all cursor-pointer dark:bg-gray-200 dark:text-gray-700 dark:hover:bg-gray-800/10"
           >
             오답노트 확인
           </button>

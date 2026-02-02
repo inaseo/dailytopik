@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Inter } from "next/font/google";
+
 import QuizView from "./components/QuizView";
 import ResultView from "./components/ResultView";
+import GradientText from "./components/GradientText";
 import WrongNoteView from "./components/WrongNoteView";
 import { TopikStore } from "./lib/store";
 import { Question } from "./types";
 
-const inter = Inter({ subsets: ["latin"] });
+
 
 // 앱의 전체 화면 상태 정의
 type ScreenState = "HOME" | "QUIZ" | "RESULT" | "NOTE";
@@ -51,7 +52,7 @@ export default function Home() {
 
   if (screen === "RESULT") {
     return (
-      <div className={inter.className}>
+      <div>
         <ResultView
           total={quizResult.total}
           correct={quizResult.correct}
@@ -67,7 +68,7 @@ export default function Home() {
 
   // 기본 HOME 화면
   return (
-    <div className={`flex min-h-screen flex-col items-center justify-center bg-gray-50 p-6 relative overflow-hidden ${inter.className}`}>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-6 relative overflow-hidden">
       {/* 배경 장식 */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-100 rounded-full blur-3xl opacity-50 z-0"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-100 rounded-full blur-3xl opacity-50 z-0"></div>
@@ -76,11 +77,11 @@ export default function Home() {
 
         {/* 타이틀 영역 */}
         <div className="text-center space-y-1">
-          <span className={`px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full dark:bg-gray-200 dark:text-gray-700 ${inter.className}`}>TOPIK II</span>
-          <h1 className={`mt-3 text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 ${inter.className}`}>
+          <span className="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-full dark:bg-gray-200 dark:text-gray-700">TOPIK II</span>
+          <GradientText as="h1" className="mt-3 text-4xl">
             Daily TOPIK
-          </h1>
-          <p className={`text-gray-700 font-medium dark:text-gray-700 ${inter.className}`}>Master Korean with 10 Questions a Day</p>
+          </GradientText>
+          <p className="text-gray-700 font-medium dark:text-gray-700">Learn Korean in Just 10 Questions a Day</p>
         </div>
 
         {/* 메인 액션 버튼 */}
@@ -89,7 +90,7 @@ export default function Home() {
             onClick={startQuiz}
             className="group relative w-full h-16 flex items-center justify-center bg-blue-600 hover:bg-blue-700 transition-all rounded-2xl cursor-pointer overflow-hidden text-white"
           >
-            <span className={`relative z-10 font-bold text-lg flex items-center gap-2 ${inter.className}`}>
+            <span className="relative z-10 font-bold text-lg flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
               </svg>
@@ -99,7 +100,7 @@ export default function Home() {
 
           <button
             onClick={() => setScreen("NOTE")}
-            className={`w-full h-16 flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-lg rounded-2xl transition-all cursor-pointer dark:bg-gray-200 dark:text-gray-700 dark:hover:bg-gray-800/10 ${inter.className}`}
+            className="w-full h-16 flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-lg rounded-2xl transition-all cursor-pointer dark:bg-gray-200 dark:text-gray-700 dark:hover:bg-gray-800/10"
           >
             Review Mistakes
           </button>

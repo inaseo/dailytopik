@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { TopikStore } from "../lib/store";
 import { Question, UserHistory } from "../types";
+import GradientText from "./GradientText";
 
 interface WrongNoteViewProps {
     onBack: () => void;
@@ -41,7 +42,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
         // 선택하지 않았으면 경고? (요구가 없으므로 생략하고 그냥 보여줄 수도 있지만, "Re-solving"이라고 했으므로 선택이 필요함)
         // 만약 선택이 없으면 동작 X
         if (selectedAnswers[id] === undefined) {
-            alert("답을 선택해주세요.");
+            alert("Select an answer.");
             return;
         }
 
@@ -72,7 +73,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-2xl font-bold text-blue-600">Review Mistakes</h1>
+                    <GradientText as="h1" className="text-2xl">Review Mistakes</GradientText>
                 </div>
             </div>
 

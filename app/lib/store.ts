@@ -134,25 +134,26 @@ export class TopikStore {
 
     // 2. 결과 제출 및 저장
     static submitResults(results: { questionId: number; isCorrect: boolean }[]) {
-        const wrongHistory = this.getWrongHistory();
+        let wrongHistory = this.getWrongHistory();
         const now = new Date().toISOString();
 
         results.forEach((r) => {
             // 틀린 문제는 오답노트에 영구 저장
             if (!r.isCorrect) {
-                const existingIndex = wrongHistory.findIndex((h) => h.question_id === r.questionId);
-                if (existingIndex === -1) {
-                    wrongHistory.push({
-                        question_id: r.questionId,
-                        is_correct: false,
-                        solved_at: now
-                    });
-                } else {
-                    // 이미 있으면 날짜만 갱신
-                    wrongHistory[existingIndex].solved_at = now;
-                }
+                // 이미 있으면 삭제 후 다시 추가 (최신순 유지를 위해)
+                wrongHistory = wrongHistory.filter((h) => h.question_id !== r.questionId);
+
+                // 맨 앞에 추가
+                wrongHistory.unshift({
+                    question_id: r.questionId,
+                    is_correct: false,
+                    solved_at: now
+                });
             }
         });
+
+        // 최신순 정렬 (혹시 모를 순서 꼬임 방지)
+        wrongHistory.sort((a, b) => new Date(b.solved_at).getTime() - new Date(a.solved_at).getTime());
 
         // 저장
         if (typeof window !== "undefined") {

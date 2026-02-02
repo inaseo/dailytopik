@@ -125,20 +125,16 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                 onClick={() => toggleExpand(item.question_id)}
                                 className="p-5 cursor-pointer flex justify-between items-center transition-colors hover:bg-gray-50/50"
                             >
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3">
-                                        <h3 className="text-base font-bold text-gray-900">
-                                            Question {index + 1}
-                                        </h3>
-                                        <span className="bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase border border-rose-100">
-                                            Incorrect
-                                        </span>
-                                    </div>
-                                    <div className="mt-1">
-                                        <span className="text-xs text-gray-400">
-                                            {new Date(item.solved_at).toLocaleDateString()}
-                                        </span>
-                                    </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium text-gray-500">
+                                        Question {index + 1}
+                                    </span>
+                                    <span className="bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase border border-rose-100">
+                                        Incorrect
+                                    </span>
+                                    <span className="text-xs text-gray-400 border-l border-gray-300 pl-3">
+                                        {new Date(item.solved_at).toLocaleDateString()}
+                                    </span>
                                 </div>
                                 <div className="ml-4 text-gray-300">
                                     {expandedId === item.question_id ? '▲' : '▼'}
@@ -153,23 +149,23 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                             const isDuplicate = item.question.instruction?.trim() === item.question.question?.trim();
                                             return (
                                                 <>
-                                                    {/* 1. Instruction - Always Visible (Secondary visual weight) */}
-                                                    <div className="px-0 py-1 mb-6">
-                                                        <p className="text-xs font-medium text-gray-500 leading-relaxed">
+                                                    {/* 1. Instruction - Reduced emphasis */}
+                                                    <div className="px-0 py-1 mb-2">
+                                                        <p className="text-xs text-gray-400 leading-relaxed">
                                                             {item.question.instruction}
                                                         </p>
                                                     </div>
 
-                                                    {/* 2. Passage - only if exists */}
+                                                    {/* 2. Passage */}
                                                     {item.question.passage && (
                                                         <div className="bg-gray-100 p-6 rounded-2xl border border-gray-200 text-gray-700 leading-relaxed mb-6 whitespace-pre-line text-base">
                                                             {item.question.passage}
                                                         </div>
                                                     )}
 
-                                                    {/* 3. Question Body - Primary Content (Hide if Duplicate) */}
+                                                    {/* 3. Question Body - Primary Emphasis */}
                                                     {!isDuplicate && (
-                                                        <div className="text-sm font-bold text-gray-900 mb-6 leading-snug whitespace-pre-wrap">
+                                                        <div className="text-xl font-bold text-gray-900 mb-6 leading-snug whitespace-pre-wrap">
                                                             {(() => {
                                                                 if (item.question.type === "underline") {
                                                                     const parts = item.question.question.split(/__(.+?)__/);

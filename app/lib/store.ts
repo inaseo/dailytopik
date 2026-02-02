@@ -19,26 +19,7 @@ export class TopikStore {
 
     // 1. 새로운 문제 10개를 가져오는 함수 (Deterministic Selection)
     static getNewSet(): Question[] {
-        // 1) 전체 문제 풀 구성 (정적 데이터 + 생성된 데이터)
-        const staticQuestions = questions;
-        const generatedQuestions = this.getGeneratedQuestions();
-        const allQuestions = [...staticQuestions, ...generatedQuestions];
-
-        // 2) 이미 출제된 문제 로드
-        let servedIds = this.getServedIds();
-
-        // 3) 가용 문제 필터링
-        let available = allQuestions.filter(q => !servedIds.has(q.id));
-
-        // 4) 풀 고갈 체크 및 리셋 (Silent Reset)
-        // 만약 가용 문제가 10개 미만이면 기록을 초기화하고 전체 풀에서 다시 시작
-        if (available.length < 10) {
-            this.clearServedIds();
-            servedIds = new Set(); // 메모리 상에서도 초기화
-            available = [...allQuestions];
-        }
-
-        // 5) 타입별 목표 개수 설정
+        // 1) 타입별 목표 개수 설정 (Strict Distribution)
         const targets: Record<string, number> = {
             blank: 2,
             passage: 1,
@@ -51,10 +32,33 @@ export class TopikStore {
             purpose: 1
         };
 
-        const selected: Question[] = [];
-        const selectedIds = new Set<number>();
+        // 2) 전체 문제 풀 구성
+        const staticQuestions = questions;
+        const generatedQuestions = this.getGeneratedQuestions();
+        const allQuestions = [...staticQuestions, ...generatedQuestions];
 
-        // 6) 타입별 문제 선택
+        // 3) 이미 출제된 문제 로드
+        let servedIds = this.getServedIds();
+
+        // 4) 풀 고갈 체크 (Global Silent Reset)
+        // 어떤 타입이라도 목표 개수보다 가용 문제가 적으면 전체 리셋
+        let needReset = false;
+        for (const [type, targetCount] of Object.entries(targets)) {
+            const availableCount = allQuestions.filter(q => q.type === type && !servedIds.has(q.id)).length;
+            if (availableCount < targetCount) {
+                needReset = true;
+                break;
+            }
+        }
+
+        if (needReset) {
+            this.clearServedIds();
+            servedIds = new Set(); // 메모리 초기화
+        }
+
+        // 5) 문제 선택
+        const selected: Question[] = [];
+
         // 헬퍼: 랜덤 셔플 후 n개 선택
         const pickRandom = (pool: Question[], count: number) => {
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
@@ -62,33 +66,17 @@ export class TopikStore {
         };
 
         for (const [type, count] of Object.entries(targets)) {
-            // 해당 타입이면서 아직 선택되지 않은 가용 문제
-            const typePool = available.filter(q => q.type === type && !selectedIds.has(q.id));
-            const picked = pickRandom(typePool, count);
+            // 해당 타입의 가용 문제 (servedIds 제외)
+            const typeCandidates = allQuestions.filter(q => q.type === type && !servedIds.has(q.id));
+            const picked = pickRandom(typeCandidates, count);
 
-            picked.forEach(q => {
-                selected.push(q);
-                selectedIds.add(q.id);
-            });
+            picked.forEach(q => selected.push(q));
         }
 
-        // 7) Fallback: 10개가 안 채워졌을 경우 (특정 타입 부족 시)
-        // 남은 자리는 타입 무관하게 가용 문제 중에서 채움
-        if (selected.length < 10) {
-            const remainingCount = 10 - selected.length;
-            const leftoverPool = available.filter(q => !selectedIds.has(q.id));
-            const filled = pickRandom(leftoverPool, remainingCount);
-
-            filled.forEach(q => {
-                selected.push(q);
-                selectedIds.add(q.id);
-            });
-        }
-
-        // 8) 순서 섞기 (인접 중복 타입 방지)
+        // 6) 순서 섞기 (인접 중복 타입 방지)
         const finalSet = this.optimizeOrder(selected);
 
-        // 9) 출제된 문제들을 served 목록에 저장 (영구 보존)
+        // 7) 출제된 문제들을 served 목록에 저장 (영구 보존)
         finalSet.forEach(q => servedIds.add(q.id));
         this.saveServedIds(servedIds);
 

@@ -25,60 +25,66 @@ export class TopikStore {
         return newQuestions;
     }
 
-    // 1. 새로운 문제 10개를 가져오는 함수
+    // 1. 새로운 문제 10개를 가져오는 함수 (Greedy Selection)
     static getNewSet(): Question[] {
-        // 저장된 풀이 기록 가져오기
         let solvedIds = this.getSolvedIds();
-
-        // 생성된 문제 병합 (Static + Generated)
         let currentGeneratedQuestions = this.getGeneratedQuestions();
         let allQuestions = [...questions, ...currentGeneratedQuestions];
 
-        // 각 유형별 필요 개수
-        const REQUIRED_COUNTS = {
-            vocab_grammar: 4,
-            short_reading: 3,
-            long_reading: 3,
-        };
+        let available = allQuestions.filter(q => !solvedIds.includes(q.id));
 
-        // 현재 풀지 않은 문제들로 후보군을 분류
-        let availableQuestions = allQuestions.filter((q) => !solvedIds.includes(q.id) && parseInt(q.level) >= 3);
-        let byType = this.groupQuestionsByType(availableQuestions);
-
-        // 만약 한 유형이라도 부족하다면? -> 사이클 리셋 (사용자 몰래)
-        // 주의: 생성된 문제가 Vocab뿐이므로, Reading이 부족하면 리셋됨.
-        if (
-            byType.vocab_grammar.length < REQUIRED_COUNTS.vocab_grammar ||
-            byType.short_reading.length < REQUIRED_COUNTS.short_reading ||
-            byType.long_reading.length < REQUIRED_COUNTS.long_reading
-        ) {
-            console.log("Internal Reset Triggered: Not enough questions for a full set.");
-            // 사이클 초기화: 푼 문제 목록을 비움
+        if (available.length < 10) {
+            console.log("Resetting question history...");
             this.clearSolvedIds();
             solvedIds = [];
-
-            // 생성된 문제도 리셋(재생성)
             if (typeof window !== "undefined") {
-                const refreshedQuestions = generateQuestions(10);
-                localStorage.setItem(STORAGE_KEY_GENERATED, JSON.stringify(refreshedQuestions));
-                currentGeneratedQuestions = refreshedQuestions; // Update the reference
+                const newGen = generateQuestions(10);
+                localStorage.setItem(STORAGE_KEY_GENERATED, JSON.stringify(newGen));
+                currentGeneratedQuestions = newGen;
             }
-
-            // 전체 문제에서 다시 선택 (정적 + 새로 생성된 문제)
             allQuestions = [...questions, ...currentGeneratedQuestions];
-            availableQuestions = allQuestions.filter((q) => !solvedIds.includes(q.id));
-            byType = this.groupQuestionsByType(availableQuestions);
+            available = allQuestions;
         }
 
-        // 각 유형별로 랜덤하게 뽑기
-        const setQuestions = [
-            ...this.pickRandom(byType.vocab_grammar, REQUIRED_COUNTS.vocab_grammar),
-            ...this.pickRandom(byType.short_reading, REQUIRED_COUNTS.short_reading),
-            ...this.pickRandom(byType.long_reading, REQUIRED_COUNTS.long_reading),
-        ];
+        // Shuffle candidates first for randomness
+        let candidates = this.shuffleArray([...available]);
+        const selected: Question[] = [];
 
-        // 결과 섞어서 리턴 (순서를 섞음)
-        return this.shuffleArray(setQuestions);
+        for (let i = 0; i < 10; i++) {
+            if (candidates.length === 0) break;
+
+            const prev = selected.length > 0 ? selected[selected.length - 1] : null;
+            let bestIndex = 0;
+
+            if (prev) {
+                const prevGroup = this.getQuestionGroup(prev.type);
+
+                // 1. Prefer Different Group
+                const idxDiffGroup = candidates.findIndex(c => this.getQuestionGroup(c.type) !== prevGroup);
+
+                if (idxDiffGroup !== -1) {
+                    bestIndex = idxDiffGroup;
+                } else {
+                    // 2. Prefer Different Type (Same Group)
+                    const idxDiffType = candidates.findIndex(c => c.type !== prev.type);
+                    if (idxDiffType !== -1) {
+                        bestIndex = idxDiffType;
+                    }
+                    // 3. Fallback: Same Group & Type (bestIndex = 0)
+                }
+            }
+
+            selected.push(candidates[bestIndex]);
+            candidates.splice(bestIndex, 1);
+        }
+
+        return selected;
+    }
+
+    private static getQuestionGroup(type: string): string {
+        if (["passage", "title", "ordering"].includes(type)) return "reading";
+        if (["blank", "connector", "underline"].includes(type)) return "grammar";
+        return "other";
     }
 
     // 2. 결과 제출 및 저장
@@ -159,9 +165,9 @@ export class TopikStore {
 
     private static groupQuestionsByType(qs: Question[]) {
         return {
-            vocab_grammar: qs.filter((q) => q.type === "vocab_grammar"),
-            short_reading: qs.filter((q) => q.type === "short_reading"),
-            long_reading: qs.filter((q) => q.type === "long_reading"),
+            blank: qs.filter((q) => q.type === "blank"),
+            passage: qs.filter((q) => q.type === "passage"),
+            // Add other types if we start generating/using them
         };
     }
 

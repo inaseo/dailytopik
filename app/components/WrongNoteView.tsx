@@ -127,9 +127,6 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                             >
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                                            {item.question.level}급
-                                        </span>
                                         <h3 className="text-[15px] font-bold text-gray-900">
                                             Question {index + 1} · <span className="text-[#94A3B8] font-medium">Previously Incorrect</span>
                                         </h3>
@@ -148,34 +145,35 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                             {/* 상세 내용 (펼쳐졌을 때만 보임) */}
                             {expandedId === item.question_id && (
                                 <div className="bg-white px-6 pb-6 pt-0 animate-in slide-in-from-top-2 duration-200">
-                                    {(() => {
-                                        const processed = item.question.question_text.replace("다음 ( )에 알맞은 것을 고르십시오.", "").trim();
-                                        const splitIdx = processed.indexOf('\n');
-                                        let instruction = null;
-                                        let body = processed;
-                                        if (splitIdx !== -1) {
-                                            instruction = processed.substring(0, splitIdx);
-                                            body = processed.substring(splitIdx + 1);
-                                        }
-
-                                        return (
-                                            <div className="flex flex-col gap-4 mb-6">
-                                                {instruction && (
-                                                    <p className="text-gray-900 border-b border-gray-100 pb-3 font-medium">
-                                                        {instruction}
-                                                    </p>
-                                                )}
-                                                {item.question.passage && (
-                                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap leading-relaxed text-gray-800 text-sm">
-                                                        {item.question.passage}
+                                    <div className="flex flex-col mb-4">
+                                        {(() => {
+                                            const isDuplicate = item.question.instruction?.trim() === item.question.question?.trim();
+                                            return (
+                                                <>
+                                                    {/* 1. Instruction */}
+                                                    <div className="px-0 py-1 mb-12">
+                                                        <p className="text-lg font-semibold text-gray-900 leading-relaxed">
+                                                            {item.question.instruction}
+                                                        </p>
                                                     </div>
-                                                )}
-                                                <div className="text-gray-900 font-bold whitespace-pre-wrap leading-relaxed">
-                                                    <span dangerouslySetInnerHTML={{ __html: body }} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
+
+                                                    {/* 2. Passage - only if exists */}
+                                                    {item.question.passage && (
+                                                        <div className="bg-gray-100 p-6 rounded-2xl border border-gray-200 text-gray-700 leading-relaxed mb-6 whitespace-pre-line text-sm">
+                                                            {item.question.passage}
+                                                        </div>
+                                                    )}
+
+                                                    {/* 3. Question Body - Hide only if identical to instruction */}
+                                                    {!isDuplicate && (
+                                                        <div className="text-lg font-bold text-gray-900 mb-6 leading-snug whitespace-pre-wrap">
+                                                            {item.question.question}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
 
                                     {/* 복습용 문제 UI */}
                                     {(!questionStatus[item.question_id] || questionStatus[item.question_id] === "IDLE") ? (
@@ -202,7 +200,7 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                                 })}
                                             </div>
                                             <button
-                                                onClick={() => handleCheckAnswer(item.question_id, item.question.correct_answer)}
+                                                onClick={() => handleCheckAnswer(item.question_id, item.question.answer)}
                                                 className="mt-4 w-full h-[56px] bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
                                             >
                                                 Check Answer
@@ -214,7 +212,7 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                                 {item.question.choices.map((choice, idx) => {
                                                     const isSelected = selectedAnswers[item.question_id] === idx;
                                                     const status = questionStatus[item.question_id];
-                                                    const isAnswer = idx === item.question.correct_answer;
+                                                    const isAnswer = idx === item.question.answer;
 
                                                     let containerClass = "p-4 rounded-xl border border-transparent bg-gray-50 text-gray-400";
                                                     let feedbackIcon = null;
@@ -253,12 +251,7 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                                 })}
                                             </div>
 
-                                            {questionStatus[item.question_id] === "REVEALED" && (
-                                                <div className="bg-[#EEF2FF] p-5 rounded-xl text-blue-900 leading-relaxed">
-                                                    <span className="font-bold block mb-2 text-blue-700 text-sm uppercase tracking-wide">Explanation</span>
-                                                    <p className="text-sm">{item.question.explanation}</p>
-                                                </div>
-                                            )}
+                                            {/* Explanation Removed (Not in schema) */}
 
                                             <div style={{ marginTop: "16px" }}>
                                                 {questionStatus[item.question_id] === "WRONG" && (

@@ -47,7 +47,7 @@ export default function QuizView({ questions, onFinish, onCancel }: QuizViewProp
         // 결과 계산
         const results = questions.map((q) => ({
             questionId: q.id,
-            isCorrect: selectedAnswers[q.id] === q.correct_answer,
+            isCorrect: selectedAnswers[q.id] === q.answer,
         }));
         onFinish(results);
     };
@@ -73,115 +73,121 @@ export default function QuizView({ questions, onFinish, onCancel }: QuizViewProp
                 {/* 문제 영역 */}
                 <div className="flex-1 overflow-y-auto pb-20 no-scrollbar">
                     {/* 1. Level Indicator */}
-                    <div className="mb-2 flex items-baseline justify-start">
-                        <span className="text-xs font-semibold px-2 py-1 bg-[#1E293B] text-[#94A3B8] rounded border border-[#334155]">
-                            {currentQuestion.level}급
-                        </span>
+
+
+                    {/* Unified Content Renderer */}
+                    <div className="mb-2">
+                        {/* 1. Instruction (Caption vs Prominent) */}
+                        {(() => {
+                            const isDuplicate = currentQuestion.instruction?.trim() === currentQuestion.question?.trim();
+
+                            return (
+                                <>
+                                    <div className="px-0 py-1 mb-12">
+                                        <p className="text-lg font-semibold text-white leading-relaxed">
+                                            {currentQuestion.instruction}
+                                        </p>
+                                    </div>
+
+                                    {/* 2. Passage (Grey Box) - ONLY if exists */}
+                                    {currentQuestion.passage && (
+                                        <div className="bg-[#1E293B] p-6 rounded-2xl border border-slate-700/50 text-slate-300 leading-relaxed mb-6 whitespace-pre-line text-base shadow-sm">
+                                            {currentQuestion.passage}
+                                        </div>
+                                    )}
+
+                                    {/* 3. Question (Main Body) - Hide only if identical to instruction */}
+                                    {!isDuplicate && (
+                                        <div className="text-xl font-bold text-white leading-snug mb-8 whitespace-pre-line">
+                                            {currentQuestion.question}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
 
-                    {/* Pre-calculate Instruction and Body split */}
+                    {/* 보기 리스트 */}
                     {(() => {
-                        const processed = currentQuestion.question_text.replace("다음 ( )에 알맞은 것을 고르십시오.", "").trim();
-                        const splitIdx = processed.indexOf('\n');
-                        let instruction = null;
-                        let body = processed;
+                        const safeChoices = Array.isArray(currentQuestion?.choices) ? currentQuestion.choices : [];
 
-                        if (splitIdx !== -1) {
-                            const firstLine = processed.substring(0, splitIdx).trim();
-                            // 대화형(가:, 나:)일 경우 지시문으로 간주하지 않음
-                            if (firstLine.startsWith("가:") || firstLine.startsWith("나:")) {
-                                instruction = null;
-                                body = processed;
-                            } else {
-                                instruction = firstLine;
-                                body = processed.substring(splitIdx + 1);
-                            }
+                        if (safeChoices.length !== 4) {
+                            return (
+                                <div className="p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200 mb-4">
+                                    <p className="font-bold mb-2">Invalid question data: choices missing or not 4 items.</p>
+                                    <p className="text-sm opacity-80 mb-3">(id: {currentQuestion.id}, type: {currentQuestion.type})</p>
+                                    <button
+                                        onClick={() => {
+                                            const isLast = currentIndex === questions.length - 1;
+                                            if (isLast) {
+                                                handleSubmit();
+                                            } else {
+                                                setCurrentIndex((prev) => prev + 1);
+                                                setIsFeedbackMode(false);
+                                            }
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                                    >
+                                        Skip this question
+                                    </button>
+                                </div>
+                            );
                         }
 
                         return (
-                            <div className="mb-6">
-                                {/* 2. Instruction (문항 지시문) */}
-                                {instruction && (
-                                    <p className="text-sm text-[#F8FAFC] mb-2 font-medium bg-[#1E293B] p-3 rounded-lg border border-[#334155] inline-block">
-                                        {instruction}
-                                    </p>
-                                )}
+                            <div className="flex flex-col gap-3">
+                                {safeChoices.map((choice, idx) => {
+                                    const isSelected = selectedAnswers[currentQuestion.id] === idx;
+                                    const isCorrect = idx === currentQuestion.answer;
 
-                                {/* 3. Passage (제시문) */}
-                                {currentQuestion.passage && (
-                                    <div
-                                        className="p-4 rounded-lg my-4 whitespace-pre-wrap leading-relaxed"
-                                        style={{
-                                            backgroundColor: "#1E293B",
-                                            color: "#F8FAFC",
-                                            border: "1px solid #334155"
-                                        }}
-                                    >
-                                        {currentQuestion.passage}
-                                    </div>
-                                )}
+                                    // 기본 스타일
+                                    let containerClass = "bg-[#1E293B] border-[#334155] text-[#F8FAFC]";
 
-                                {/* 4. Question Body (문항 본문) */}
-                                <h2
-                                    className={`text-xl font-bold whitespace-pre-wrap leading-snug text-[#F8FAFC] ${instruction ? "mt-2" : ""}`}
-                                    dangerouslySetInnerHTML={{ __html: body }}
-                                />
+                                    if (isFeedbackMode) {
+                                        if (isCorrect) {
+                                            // 정답인 보기
+                                            containerClass = "bg-[#064E3B] border-[#10B981] text-[#6EE7B7] font-bold";
+                                        } else if (isSelected && !isCorrect) {
+                                            // 내가 고른 오답
+                                            containerClass = "bg-[#7F1D1D] border-[#EF4444] text-[#FCA5A5] font-bold";
+                                        } else {
+                                            // 선택안함 & 오답
+                                            containerClass = "bg-[#1E293B] border-[#334155] text-[#64748B] opacity-60";
+                                        }
+                                    } else {
+                                        if (isSelected) {
+                                            // 선택됨 (Before feedback)
+                                            containerClass = "bg-[#1E293B] border-[#3B82F6] ring-1 ring-[#3B82F6] text-[#60A5FA] font-semibold";
+                                        } else {
+                                            // 선택 안됨 (Hover 효과)
+                                            containerClass += " hover:bg-[#334155] hover:border-[#475569] cursor-pointer transition-colors";
+                                        }
+                                    }
+
+                                    return (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleSelect(idx)}
+                                            disabled={isFeedbackMode}
+                                            className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${containerClass}`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <span className={`mr-2 text-sm ${isFeedbackMode && (isCorrect || isSelected) ? "font-bold" : "text-[#94A3B8]"}`}>
+                                                        {idx + 1}
+                                                    </span>
+                                                    {choice}
+                                                </div>
+                                                {/* 결과 아이콘 표시 */}
+                                                {isFeedbackMode && isCorrect && <span className="text-[#4ADE80] font-bold text-lg ml-2" aria-label="Correct">O</span>}
+                                                {isFeedbackMode && isSelected && !isCorrect && <span className="text-[#F87171] font-bold text-lg ml-2" aria-label="Incorrect">X</span>}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         );
                     })()}
-
-                    {/* 보기 리스트 */}
-                    <div className="flex flex-col gap-3">
-                        {currentQuestion.choices.map((choice, idx) => {
-                            const isSelected = selectedAnswers[currentQuestion.id] === idx;
-                            const isCorrect = idx === currentQuestion.correct_answer;
-
-                            // 기본 스타일
-                            let containerClass = "bg-[#1E293B] border-[#334155] text-[#F8FAFC]";
-
-                            if (isFeedbackMode) {
-                                if (isCorrect) {
-                                    // 정답인 보기
-                                    containerClass = "bg-[#064E3B] border-[#10B981] text-[#6EE7B7] font-bold";
-                                } else if (isSelected && !isCorrect) {
-                                    // 내가 고른 오답
-                                    containerClass = "bg-[#7F1D1D] border-[#EF4444] text-[#FCA5A5] font-bold";
-                                } else {
-                                    // 선택안함 & 오답
-                                    containerClass = "bg-[#1E293B] border-[#334155] text-[#64748B] opacity-60";
-                                }
-                            } else {
-                                if (isSelected) {
-                                    // 선택됨 (Before feedback)
-                                    containerClass = "bg-[#1E293B] border-[#3B82F6] ring-1 ring-[#3B82F6] text-[#60A5FA] font-semibold";
-                                } else {
-                                    // 선택 안됨 (Hover 효과)
-                                    containerClass += " hover:bg-[#334155] hover:border-[#475569] cursor-pointer transition-colors";
-                                }
-                            }
-
-                            return (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleSelect(idx)}
-                                    disabled={isFeedbackMode}
-                                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${containerClass}`}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <span className={`mr-2 text-sm ${isFeedbackMode && (isCorrect || isSelected) ? "font-bold" : "text-[#94A3B8]"}`}>
-                                                {idx + 1}
-                                            </span>
-                                            {choice}
-                                        </div>
-                                        {/* 결과 아이콘 표시 */}
-                                        {isFeedbackMode && isCorrect && <span className="text-[#4ADE80] font-bold text-lg ml-2" aria-label="Correct">O</span>}
-                                        {isFeedbackMode && isSelected && !isCorrect && <span className="text-[#F87171] font-bold text-lg ml-2" aria-label="Incorrect">X</span>}
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
                 </div>
 
                 {/* 하단 버튼 */}

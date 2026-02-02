@@ -22,6 +22,18 @@ export default function Home() {
   // 1. "새 문제 받기" 클릭 시
   const startQuiz = () => {
     const questions = TopikStore.getNewSet();
+
+    // Debug Log: Verify Normalization
+    console.log("[questions] Loaded set size:", questions.length);
+    const validCount = questions.filter(q =>
+      q.choices?.length === 4 &&
+      ["blank", "passage", "ordering", "underline", "title", "connector"].includes(q.type)
+    ).length;
+    console.log("[questions] Valid normalized count:", validCount);
+    if (questions.length !== validCount) {
+      console.warn("[questions] Invalid questions found!", questions.filter(q => q.choices?.length !== 4));
+    }
+
     setQuizQuestions(questions);
     setScreen("QUIZ");
   };

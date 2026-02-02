@@ -29,7 +29,7 @@ const WB_L3 = { // 3급: Public usage, Social, Intermediate
 
 interface Template {
     id: string; // To track usage
-    generate: (id: number, level: Question['level']) => Question;
+    generate: (id: number, level: string) => Question;
 }
 
 // Level 2 Templates
@@ -62,12 +62,11 @@ const L2_TEMPLATES: Template[] = [
 
             return {
                 id,
-                level,
-                type: "vocab_grammar",
-                question_text: `다음 ( )에 알맞은 것을 고르십시오.\n${t.text}`,
+                type: "blank",
+                instruction: "다음 ( )에 알맞은 것을 고르십시오.",
+                question: t.text,
                 choices: shuffled,
-                correct_answer: shuffled.indexOf(t.answer),
-                explanation: "문맥에 맞는 동사를 고르는 문제입니다."
+                answer: shuffled.indexOf(t.answer)
             };
         }
     },
@@ -90,11 +89,12 @@ const L2_TEMPLATES: Template[] = [
             const shuffled = shuffle(choices);
 
             return {
-                id, level, type: "vocab_grammar",
-                question_text: `다음 ( )에 알맞은 것을 고르십시오.\n${t.sent}`,
+                id,
+                type: "blank",
+                instruction: "다음 ( )에 알맞은 것을 고르십시오.",
+                question: t.sent,
                 choices: shuffled,
-                correct_answer: shuffled.indexOf(t.ans),
-                explanation: "알맞은 조사를 고르는 문제입니다."
+                answer: shuffled.indexOf(t.ans)
             };
         }
     },
@@ -114,11 +114,12 @@ const L2_TEMPLATES: Template[] = [
             const shuffled = shuffle(choices);
 
             return {
-                id, level, type: "vocab_grammar",
-                question_text: `다음 ( )에 알맞은 것을 고르십시오.\n${t.pre} ( ) ${t.post}`,
+                id,
+                type: "blank",
+                instruction: "다음 ( )에 알맞은 것을 고르십시오.",
+                question: `${t.pre} ( ) ${t.post}`,
                 choices: shuffled,
-                correct_answer: shuffled.indexOf(t.ans),
-                explanation: "원인이나 이유를 나타내는 문법을 고르는 문제입니다."
+                answer: shuffled.indexOf(t.ans)
             };
         }
     }
@@ -143,11 +144,12 @@ const L3_TEMPLATES: Template[] = [
             const shuffled = shuffle(choices);
 
             return {
-                id, level, type: "vocab_grammar",
-                question_text: `다음 ( )에 알맞은 말을 고르십시오.\n${t.text}`,
+                id,
+                type: "blank",
+                instruction: "다음 ( )에 알맞은 말을 고르십시오.",
+                question: t.text,
                 choices: shuffled,
-                correct_answer: shuffled.indexOf(t.ans),
-                explanation: "문맥에 알맞은 명사를 고르는 문제입니다."
+                answer: shuffled.indexOf(t.ans)
             };
         }
     },
@@ -167,11 +169,12 @@ const L3_TEMPLATES: Template[] = [
             const shuffled = shuffle(choices);
 
             return {
-                id, level, type: "vocab_grammar",
-                question_text: `다음 ( )에 알맞은 말을 고르십시오.\n${t.text}`,
+                id,
+                type: "blank",
+                instruction: "다음 ( )에 알맞은 말을 고르십시오.",
+                question: t.text,
                 choices: shuffled,
-                correct_answer: shuffled.indexOf(t.ans),
-                explanation: "문장의 인과 관계나 시간 순서를 나타내는 문법을 찾는 문제입니다."
+                answer: shuffled.indexOf(t.ans)
             };
         }
     },
@@ -195,11 +198,12 @@ const L3_TEMPLATES: Template[] = [
             const shuffled = shuffle(choices);
 
             return {
-                id, level, type: "vocab_grammar",
-                question_text: `다음 ( )에 알맞은 말을 고르십시오.\n${t.text}`,
+                id,
+                type: "blank",
+                instruction: "다음 ( )에 알맞은 말을 고르십시오.",
+                question: t.text,
                 choices: shuffled,
-                correct_answer: shuffled.indexOf(t.ans),
-                explanation: "주체 높임법에 알맞은 어휘를 고르는 문제입니다."
+                answer: shuffled.indexOf(t.ans)
             };
         }
     }

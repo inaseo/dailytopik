@@ -64,7 +64,7 @@ export default function Home() {
   }
 
   if (screen === "NOTE") {
-    return <WrongNoteView onBack={() => setScreen("HOME")} />;
+    return <WrongNoteView onBack={() => setScreen("HOME")} onStartNew={startQuiz} />;
   }
 
   // 기본 HOME 화면

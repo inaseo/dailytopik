@@ -7,11 +7,12 @@ import GradientText from "./GradientText";
 
 interface WrongNoteViewProps {
     onBack: () => void;
+    onStartNew: () => void;
 }
 
 type WrongNoteItem = UserHistory & { question: Question };
 
-export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
+export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps) {
     const [notes, setNotes] = useState<WrongNoteItem[]>([]);
     const [expandedId, setExpandedId] = useState<number | null>(null);
     const [questionStatus, setQuestionStatus] = useState<{ [key: number]: "IDLE" | "WRONG" | "REVEALED" }>({});
@@ -89,14 +90,29 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
             {/* 리스트 */}
             <div className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto pb-20 max-w-lg w-full mx-auto">
                 {notes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-4">
-                        <p className="font-bold text-gray-600">No mistakes to review.</p>
-                        <button
-                            onClick={onBack}
-                            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                        >
-                            Back to Home
-                        </button>
+                    <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-in fade-in zoom-in-95 duration-500">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">All caught up!</h2>
+                        <p className="text-gray-500 mb-10">No mistakes to review.</p>
+
+                        <div className="w-full max-w-xs flex flex-col gap-3">
+                            <button
+                                onClick={onStartNew}
+                                className="w-full h-[56px] rounded-[16px] font-semibold bg-blue-600 text-white shadow-[0_6px_18px_rgba(0,0,0,0.12)] hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center text-lg cursor-pointer"
+                            >
+                                New Questions
+                            </button>
+                            <button
+                                onClick={onBack}
+                                className="w-full h-[56px] rounded-[16px] font-semibold border-2 border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-[0.98] flex items-center justify-center text-lg cursor-pointer"
+                            >
+                                Back to Home
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     notes.map((item, index) => (

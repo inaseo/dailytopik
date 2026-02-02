@@ -14,7 +14,7 @@ type WrongNoteItem = UserHistory & { question: Question };
 export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
     const [notes, setNotes] = useState<WrongNoteItem[]>([]);
     const [expandedId, setExpandedId] = useState<number | null>(null);
-    const [showAnswerFor, setShowAnswerFor] = useState<{ [key: number]: boolean }>({});
+    const [questionStatus, setQuestionStatus] = useState<{ [key: number]: "IDLE" | "WRONG" | "REVEALED" }>({});
     const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
 
     useEffect(() => {
@@ -34,13 +34,15 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
     };
 
     const handleSelect = (questionId: number, choiceIndex: number) => {
-        if (showAnswerFor[questionId]) return; // 이미 정답 확인했으면 변경 불가
+        if (questionStatus[questionId] === "REVEALED") return; // 정답 확인 후에는 변경 불가
+        if (questionStatus[questionId] === "WRONG") {
+            // 틀린 상태에서 선택 시, 상태를 다시 IDLE로 변경하여 재선택 가능하게?
+            // 아니면 그냥 선택 변경만 허용? Try Again 버튼이 있으므로 여기선 선택만 변경.
+        }
         setSelectedAnswers(prev => ({ ...prev, [questionId]: choiceIndex }));
     };
 
-    const handleShowAnswer = (id: number, correctChoice: number) => {
-        // 선택하지 않았으면 경고? (요구가 없으므로 생략하고 그냥 보여줄 수도 있지만, "Re-solving"이라고 했으므로 선택이 필요함)
-        // 만약 선택이 없으면 동작 X
+    const handleCheckAnswer = (id: number, correctChoice: number) => {
         if (selectedAnswers[id] === undefined) {
             alert("Select an answer.");
             return;
@@ -48,16 +50,23 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
 
         const isCorrect = selectedAnswers[id] === correctChoice;
         if (isCorrect) {
-            // 정답을 맞춘 경우 -> 즉시 삭제
             TopikStore.removeWrongNote(id);
-            loadNotes(); // 리스트 갱신
-            // 상태 초기화
+            loadNotes();
             setSelectedAnswers(prev => { const n = { ...prev }; delete n[id]; return n; });
-            setShowAnswerFor(prev => { const n = { ...prev }; delete n[id]; return n; });
+            setQuestionStatus(prev => { const n = { ...prev }; delete n[id]; return n; });
         } else {
-            // 틀린 경우 -> 정답 및 해설 표시 (표시만 함)
-            setShowAnswerFor(prev => ({ ...prev, [id]: true }));
+            // 틀린 경우 -> WRONG 상태로 변경
+            setQuestionStatus(prev => ({ ...prev, [id]: "WRONG" }));
         }
+    };
+
+    const handleTryAgain = (id: number) => {
+        setQuestionStatus(prev => ({ ...prev, [id]: "IDLE" }));
+        setSelectedAnswers(prev => { const n = { ...prev }; delete n[id]; return n; });
+    };
+
+    const handleRevealAnswer = (id: number) => {
+        setQuestionStatus(prev => ({ ...prev, [id]: "REVEALED" }));
     };
 
     return (
@@ -157,7 +166,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                     })()}
 
                                     {/* 복습용 문제 재도전 UI */}
-                                    {!showAnswerFor[item.question_id] ? (
+                                    {(!questionStatus[item.question_id] || questionStatus[item.question_id] === "IDLE") ? (
                                         <div className="flex flex-col gap-3">
                                             <div className="flex flex-col gap-2">
                                                 {item.question.choices.map((choice, idx) => {
@@ -176,7 +185,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                                 })}
                                             </div>
                                             <button
-                                                onClick={() => handleShowAnswer(item.question_id, item.question.correct_answer)}
+                                                onClick={() => handleCheckAnswer(item.question_id, item.question.correct_answer)}
                                                 className="mt-2 w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                                             >
                                                 Check Answer
@@ -184,26 +193,57 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                         </div>
                                     ) : (
                                         <>
-                                            {/* 정답 표시 */}
+                                            {/* 정답/오답 표시 */}
                                             <div className="flex flex-col gap-2 mb-4">
                                                 {item.question.choices.map((choice, idx) => {
                                                     const isSelected = selectedAnswers[item.question_id] === idx;
+                                                    const status = questionStatus[item.question_id];
+                                                    const isAnswer = idx === item.question.correct_answer;
+
+                                                    // WRONG 상태일 때는 정답(녹색)을 보여주지 않고, 선택한 오답(빨강)만 표시
+                                                    // REVEALED 상태일 때는 둘 다 표시
+                                                    let className = "p-3 rounded border bg-white border-gray-200 text-gray-500";
+
+                                                    if (status === "REVEALED") {
+                                                        if (isAnswer) className = "p-3 rounded border bg-green-100 border-green-300 text-green-900 font-bold";
+                                                        else if (isSelected) className = "p-3 rounded border bg-red-50 border-red-300 text-red-900 font-bold";
+                                                    } else if (status === "WRONG") {
+                                                        if (isSelected) className = "p-3 rounded border bg-red-50 border-red-300 text-red-900 font-bold";
+                                                    }
+
                                                     return (
-                                                        <div key={idx} className={`p-3 rounded border ${idx === item.question.correct_answer
-                                                            ? "bg-green-100 border-green-300 text-green-900 font-bold" // 정답
-                                                            : (isSelected ? "bg-red-50 border-red-300 text-red-900 font-bold" : "bg-white border-gray-200 text-gray-500")
-                                                            }`}>
+                                                        <div key={idx} className={className}>
                                                             {idx + 1}. {choice}
-                                                            {idx === item.question.correct_answer && <span className="ml-2 text-lg text-green-600 font-bold" aria-label="Correct">O</span>}
-                                                            {isSelected && idx !== item.question.correct_answer && <span className="ml-2 text-lg text-red-600 font-bold" aria-label="Incorrect">X</span>}
+                                                            {status === "REVEALED" && isAnswer && <span className="ml-2 text-lg text-green-600 font-bold" aria-label="Correct">O</span>}
+                                                            {isSelected && !isAnswer && <span className="ml-2 text-lg text-red-600 font-bold" aria-label="Incorrect">X</span>}
                                                         </div>
                                                     );
                                                 })}
                                             </div>
 
-                                            <div className="bg-blue-50 p-4 rounded-lg text-blue-900 leading-relaxed border border-blue-100">
-                                                <span className="font-bold block mb-1">💡 해설</span>
-                                                {item.question.explanation}
+                                            {questionStatus[item.question_id] === "REVEALED" && (
+                                                <div className="bg-blue-50 p-4 rounded-lg text-blue-900 leading-relaxed border border-blue-100 mb-4">
+                                                    <span className="font-bold block mb-1">💡 해설</span>
+                                                    {item.question.explanation}
+                                                </div>
+                                            )}
+
+                                            {/* 액션 버튼들 */}
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => handleTryAgain(item.question_id)}
+                                                    className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                                                >
+                                                    Try Again
+                                                </button>
+                                                {questionStatus[item.question_id] === "WRONG" && (
+                                                    <button
+                                                        onClick={() => handleRevealAnswer(item.question_id)}
+                                                        className="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
+                                                    >
+                                                        Show Answer
+                                                    </button>
+                                                )}
                                             </div>
                                         </>
                                     )}

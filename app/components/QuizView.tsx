@@ -57,7 +57,7 @@ export default function QuizView({ questions, onFinish, onCancel }: QuizViewProp
             {/* 상단 바 */}
             <div className="flex justify-between items-center mb-6">
                 <button onClick={onCancel} className="text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer">
-                    ✕ 나가기
+                    ✕ Exit Quiz
                 </button>
                 <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{progress}</div>
             </div>
@@ -163,8 +163,8 @@ export default function QuizView({ questions, onFinish, onCancel }: QuizViewProp
                                         {choice}
                                     </div>
                                     {/* 결과 아이콘 표시 */}
-                                    {isFeedbackMode && isCorrect && <span className="text-green-600 dark:text-green-400 font-bold text-sm ml-2">정답</span>}
-                                    {isFeedbackMode && isSelected && !isCorrect && <span className="text-red-600 dark:text-red-400 font-bold text-sm ml-2">오답</span>}
+                                    {isFeedbackMode && isCorrect && <span className="text-green-600 dark:text-green-400 font-bold text-lg ml-2" aria-label="Correct">O</span>}
+                                    {isFeedbackMode && isSelected && !isCorrect && <span className="text-red-600 dark:text-red-400 font-bold text-lg ml-2" aria-label="Incorrect">X</span>}
                                 </div>
                             </button>
                         );
@@ -184,8 +184,8 @@ export default function QuizView({ questions, onFinish, onCancel }: QuizViewProp
                             }`}
                     >
                         {!isFeedbackMode
-                            ? "정답 확인"
-                            : (currentIndex === questions.length - 1 ? "결과 보기" : "다음 문제")
+                            ? "Check Answer"
+                            : (currentIndex === questions.length - 1 ? "See Results" : "Next Question")
                         }
                     </button>
                 </div>

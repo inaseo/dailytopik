@@ -72,7 +72,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-2xl font-bold text-blue-600">오답노트</h1>
+                    <h1 className="text-2xl font-bold text-blue-600">Review Mistakes</h1>
                 </div>
             </div>
 
@@ -80,12 +80,12 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
             <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto pb-20">
                 {notes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-4">
-                        <p className="font-bold text-gray-600">틀린 문항이 없습니다.</p>
+                        <p className="font-bold text-gray-600">No mistakes to review.</p>
                         <button
                             onClick={onBack}
                             className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                         >
-                            홈 바로가기
+                            Back to Home
                         </button>
                     </div>
                 ) : (
@@ -178,7 +178,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                                 onClick={() => handleShowAnswer(item.question_id, item.question.correct_answer)}
                                                 className="mt-2 w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                                             >
-                                                정답 확인
+                                                Check Answer
                                             </button>
                                         </div>
                                     ) : (
@@ -193,8 +193,8 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                                             : (isSelected ? "bg-red-50 border-red-300 text-red-900 font-bold" : "bg-white border-gray-200 text-gray-500")
                                                             }`}>
                                                             {idx + 1}. {choice}
-                                                            {idx === item.question.correct_answer && <span className="ml-2 text-xs">✅ 정답</span>}
-                                                            {isSelected && idx !== item.question.correct_answer && <span className="ml-2 text-xs text-red-600">❌ 선택한 답</span>}
+                                                            {idx === item.question.correct_answer && <span className="ml-2 text-lg text-green-600 font-bold" aria-label="Correct">O</span>}
+                                                            {isSelected && idx !== item.question.correct_answer && <span className="ml-2 text-lg text-red-600 font-bold" aria-label="Incorrect">X</span>}
                                                         </div>
                                                     );
                                                 })}

@@ -42,7 +42,7 @@ export class TopikStore {
         };
 
         // 현재 풀지 않은 문제들로 후보군을 분류
-        let availableQuestions = allQuestions.filter((q) => !solvedIds.includes(q.id));
+        let availableQuestions = allQuestions.filter((q) => !solvedIds.includes(q.id) && parseInt(q.level) >= 3);
         let byType = this.groupQuestionsByType(availableQuestions);
 
         // 만약 한 유형이라도 부족하다면? -> 사이클 리셋 (사용자 몰래)

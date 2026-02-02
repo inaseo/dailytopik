@@ -87,7 +87,7 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
             </div>
 
             {/* 리스트 */}
-            <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto pb-20">
+            <div className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto pb-20 max-w-lg w-full mx-auto">
                 {notes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-4">
                         <p className="font-bold text-gray-600">No mistakes to review.</p>
@@ -99,38 +99,39 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                         </button>
                     </div>
                 ) : (
-                    notes.map((item) => (
+                    notes.map((item, index) => (
                         <div
                             key={item.question_id}
-                            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300"
+                            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4"
                         >
                             {/* 요약 카드 (클릭 시 펼침) */}
                             <div
                                 onClick={() => toggleExpand(item.question_id)}
-                                className="p-4 cursor-pointer hover:bg-gray-50 flex justify-between items-start"
+                                className="p-5 cursor-pointer flex justify-between items-center transition-colors hover:bg-gray-50/50"
                             >
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                                            {new Date(item.solved_at).toLocaleDateString()}
-                                        </span>
-                                        <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                                             {item.question.level}급
                                         </span>
+                                        <h3 className="text-[15px] font-bold text-gray-900">
+                                            Question {index + 1} · <span className="text-[#94A3B8] font-medium">Previously Incorrect</span>
+                                        </h3>
                                     </div>
-                                    <p className="text-s text-gray-900 font-bold line-clamp-2">
-                                        {item.question.question_text.split('\n')[0]}
-                                    </p>
+                                    <div className="mt-1">
+                                        <span className="text-xs text-gray-400">
+                                            {new Date(item.solved_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="ml-4 mt-1 text-gray-300">
+                                <div className="ml-4 text-gray-300">
                                     {expandedId === item.question_id ? '▲' : '▼'}
                                 </div>
                             </div>
 
                             {/* 상세 내용 (펼쳐졌을 때만 보임) */}
-                            {/* 상세 내용 (펼쳐졌을 때만 보임) */}
                             {expandedId === item.question_id && (
-                                <div className="bg-gray-50 p-5 border-t border-gray-100 text-sm animate-in slide-in-from-top-2 duration-200">
+                                <div className="bg-white px-6 pb-6 pt-0 animate-in slide-in-from-top-2 duration-200">
                                     {(() => {
                                         const processed = item.question.question_text.replace("다음 ( )에 알맞은 것을 고르십시오.", "").trim();
                                         const splitIdx = processed.indexOf('\n');
@@ -142,22 +143,17 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                         }
 
                                         return (
-                                            <div className="flex flex-col gap-4 mb-4">
-                                                {/* 1. Instruction */}
+                                            <div className="flex flex-col gap-4 mb-6">
                                                 {instruction && (
-                                                    <p className="text-gray-900 border-b pb-2">
+                                                    <p className="text-gray-900 border-b border-gray-100 pb-3 font-medium">
                                                         {instruction}
                                                     </p>
                                                 )}
-
-                                                {/* 2. Passage */}
                                                 {item.question.passage && (
-                                                    <div className="bg-white p-3 rounded border border-gray-200 whitespace-pre-wrap leading-relaxed text-gray-900">
+                                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap leading-relaxed text-gray-800 text-sm">
                                                         {item.question.passage}
                                                     </div>
                                                 )}
-
-                                                {/* 3. Body */}
                                                 <div className="text-gray-900 font-bold whitespace-pre-wrap leading-relaxed">
                                                     <span dangerouslySetInnerHTML={{ __html: body }} />
                                                 </div>
@@ -165,87 +161,125 @@ export default function WrongNoteView({ onBack }: WrongNoteViewProps) {
                                         );
                                     })()}
 
-                                    {/* 복습용 문제 재도전 UI */}
+                                    {/* 복습용 문제 UI */}
                                     {(!questionStatus[item.question_id] || questionStatus[item.question_id] === "IDLE") ? (
                                         <div className="flex flex-col gap-3">
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-3">
                                                 {item.question.choices.map((choice, idx) => {
                                                     const isSelected = selectedAnswers[item.question_id] === idx;
                                                     return (
                                                         <div
                                                             key={idx}
                                                             onClick={() => handleSelect(item.question_id, idx)}
-                                                            className={`p-3 rounded border cursor-pointer transition-colors ${isSelected
-                                                                ? "border-blue-500 bg-blue-50 text-blue-700 font-bold"
-                                                                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"}`}
+                                                            className={`p-4 rounded-xl border transition-all cursor-pointer ${isSelected
+                                                                ? "border-blue-200 bg-blue-50 text-blue-700 font-medium"
+                                                                : "border-gray-100 bg-gray-50 text-gray-600"}`}
                                                         >
-                                                            {idx + 1}. {choice}
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs border ${isSelected ? "border-current" : "border-gray-200 bg-white text-gray-400"}`}>
+                                                                    {idx + 1}
+                                                                </div>
+                                                                {choice}
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
                                             </div>
                                             <button
                                                 onClick={() => handleCheckAnswer(item.question_id, item.question.correct_answer)}
-                                                className="mt-2 w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                                                className="mt-4 w-full h-[56px] bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
                                             >
                                                 Check Answer
                                             </button>
                                         </div>
                                     ) : (
-                                        <>
-                                            {/* 정답/오답 표시 */}
-                                            <div className="flex flex-col gap-2 mb-4">
+                                        <div className="flex flex-col gap-4">
+                                            <div className="flex flex-col gap-3 mb-2">
                                                 {item.question.choices.map((choice, idx) => {
                                                     const isSelected = selectedAnswers[item.question_id] === idx;
                                                     const status = questionStatus[item.question_id];
                                                     const isAnswer = idx === item.question.correct_answer;
 
-                                                    // WRONG 상태일 때는 정답(녹색)을 보여주지 않고, 선택한 오답(빨강)만 표시
-                                                    // REVEALED 상태일 때는 둘 다 표시
-                                                    let className = "p-3 rounded border bg-white border-gray-200 text-gray-500";
+                                                    let containerClass = "p-4 rounded-xl border border-transparent bg-gray-50 text-gray-400";
+                                                    let feedbackIcon = null;
 
                                                     if (status === "REVEALED") {
-                                                        if (isAnswer) className = "p-3 rounded border bg-green-100 border-green-300 text-green-900 font-bold";
-                                                        else if (isSelected) className = "p-3 rounded border bg-red-50 border-red-300 text-red-900 font-bold";
+                                                        if (isAnswer) {
+                                                            containerClass = "p-4 rounded-xl border border-green-200 bg-green-50 text-green-700 font-bold";
+                                                            feedbackIcon = <span className="text-xl">⭕</span>;
+                                                        }
+                                                        else if (isSelected) {
+                                                            containerClass = "p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold";
+                                                            feedbackIcon = <span className="text-xl">❌</span>;
+                                                        }
                                                     } else if (status === "WRONG") {
-                                                        if (isSelected) className = "p-3 rounded border bg-red-50 border-red-300 text-red-900 font-bold";
+                                                        if (isSelected) {
+                                                            containerClass = "p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold";
+                                                            feedbackIcon = <span className="text-xl">❌</span>;
+                                                        }
                                                     }
 
                                                     return (
-                                                        <div key={idx} className={className}>
-                                                            {idx + 1}. {choice}
-                                                            {status === "REVEALED" && isAnswer && <span className="ml-2 text-lg text-green-600 font-bold" aria-label="Correct">O</span>}
-                                                            {isSelected && !isAnswer && <span className="ml-2 text-lg text-red-600 font-bold" aria-label="Incorrect">X</span>}
+                                                        <div key={idx} className={containerClass}>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs border ${isSelected || isAnswer ? "border-current" : "border-gray-200 bg-white text-gray-400"}`}>
+                                                                    {idx + 1}
+                                                                </div>
+                                                                <span>{choice}</span>
+                                                                {feedbackIcon && (
+                                                                    <div className="ml-auto">
+                                                                        {feedbackIcon}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
                                             </div>
 
                                             {questionStatus[item.question_id] === "REVEALED" && (
-                                                <div className="bg-blue-50 p-4 rounded-lg text-blue-900 leading-relaxed border border-blue-100 mb-4">
-                                                    <span className="font-bold block mb-1">💡 해설</span>
-                                                    {item.question.explanation}
+                                                <div className="bg-[#EEF2FF] p-5 rounded-xl text-blue-900 leading-relaxed">
+                                                    <span className="font-bold block mb-2 text-blue-700 text-sm uppercase tracking-wide">Explanation</span>
+                                                    <p className="text-sm">{item.question.explanation}</p>
                                                 </div>
                                             )}
 
-                                            {/* 액션 버튼들 */}
-                                            <div className="flex gap-3">
-                                                <button
-                                                    onClick={() => handleTryAgain(item.question_id)}
-                                                    className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                                                >
-                                                    Try Again
-                                                </button>
+                                            <div style={{ marginTop: "16px" }}>
                                                 {questionStatus[item.question_id] === "WRONG" && (
+                                                    <div style={{ display: "flex", gap: "12px" }}>
+                                                        <button
+                                                            onClick={() => handleTryAgain(item.question_id)}
+                                                            className="flex-1 px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+                                                        >
+                                                            Try Again
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => handleRevealAnswer(item.question_id)}
+                                                            className="flex-1 px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition-colors cursor-pointer"
+                                                        >
+                                                            Show Answer
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {questionStatus[item.question_id] === "REVEALED" && (
                                                     <button
-                                                        onClick={() => handleRevealAnswer(item.question_id)}
-                                                        className="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
+                                                        onClick={() => {
+                                                            if (index < notes.length - 1) {
+                                                                toggleExpand(notes[index + 1].question_id);
+                                                            } else {
+                                                                toggleExpand(item.question_id);
+                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                            }
+                                                        }}
+                                                        className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
                                                     >
-                                                        Show Answer
+                                                        Next Question
                                                     </button>
                                                 )}
                                             </div>
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                             )}

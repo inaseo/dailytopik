@@ -126,10 +126,13 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                 className="p-5 cursor-pointer flex justify-between items-center transition-colors hover:bg-gray-50/50"
                             >
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-[15px] font-bold text-gray-900">
-                                            Question {index + 1} · <span className="text-[#94A3B8] font-medium">Previously Incorrect</span>
+                                    <div className="flex items-center gap-3">
+                                        <h3 className="text-base font-bold text-gray-900">
+                                            Question {index + 1}
                                         </h3>
+                                        <span className="bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase border border-rose-100">
+                                            Incorrect
+                                        </span>
                                     </div>
                                     <div className="mt-1">
                                         <span className="text-xs text-gray-400">
@@ -150,24 +153,38 @@ export default function WrongNoteView({ onBack, onStartNew }: WrongNoteViewProps
                                             const isDuplicate = item.question.instruction?.trim() === item.question.question?.trim();
                                             return (
                                                 <>
-                                                    {/* 1. Instruction */}
-                                                    <div className="px-0 py-1 mb-12">
-                                                        <p className="text-lg font-semibold text-gray-900 leading-relaxed">
+                                                    {/* 1. Instruction - Always Visible (Secondary visual weight) */}
+                                                    <div className="px-0 py-1 mb-6">
+                                                        <p className="text-xs font-medium text-gray-500 leading-relaxed">
                                                             {item.question.instruction}
                                                         </p>
                                                     </div>
 
                                                     {/* 2. Passage - only if exists */}
                                                     {item.question.passage && (
-                                                        <div className="bg-gray-100 p-6 rounded-2xl border border-gray-200 text-gray-700 leading-relaxed mb-6 whitespace-pre-line text-sm">
+                                                        <div className="bg-gray-100 p-6 rounded-2xl border border-gray-200 text-gray-700 leading-relaxed mb-6 whitespace-pre-line text-base">
                                                             {item.question.passage}
                                                         </div>
                                                     )}
 
-                                                    {/* 3. Question Body - Hide only if identical to instruction */}
+                                                    {/* 3. Question Body - Primary Content (Hide if Duplicate) */}
                                                     {!isDuplicate && (
-                                                        <div className="text-lg font-bold text-gray-900 mb-6 leading-snug whitespace-pre-wrap">
-                                                            {item.question.question}
+                                                        <div className="text-sm font-bold text-gray-900 mb-6 leading-snug whitespace-pre-wrap">
+                                                            {(() => {
+                                                                if (item.question.type === "underline") {
+                                                                    const parts = item.question.question.split(/__(.+?)__/);
+                                                                    if (parts.length >= 3) {
+                                                                        return (
+                                                                            <span>
+                                                                                {parts[0]}
+                                                                                <span className="underline underline-offset-4 decoration-2">{parts[1]}</span>
+                                                                                {parts.slice(2).join("")}
+                                                                            </span>
+                                                                        );
+                                                                    }
+                                                                }
+                                                                return item.question.question;
+                                                            })()}
                                                         </div>
                                                     )}
                                                 </>

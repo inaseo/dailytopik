@@ -99,7 +99,21 @@ export default function QuizView({ questions, onFinish, onCancel }: QuizViewProp
                                     {/* 3. Question (Main Body) - Hide only if identical to instruction */}
                                     {!isDuplicate && (
                                         <div className="text-xl font-bold text-white leading-snug mb-8 whitespace-pre-line">
-                                            {currentQuestion.question}
+                                            {(() => {
+                                                if (currentQuestion.type === "underline") {
+                                                    const parts = currentQuestion.question.split(/__(.+?)__/);
+                                                    if (parts.length >= 3) {
+                                                        return (
+                                                            <span>
+                                                                {parts[0]}
+                                                                <span className="underline underline-offset-4 decoration-2">{parts[1]}</span>
+                                                                {parts.slice(2).join("")}
+                                                            </span>
+                                                        );
+                                                    }
+                                                }
+                                                return currentQuestion.question;
+                                            })()}
                                         </div>
                                     )}
                                 </>

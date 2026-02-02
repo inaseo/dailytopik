@@ -41,11 +41,14 @@ export class TopikStore {
         // 5) 타입별 목표 개수 설정
         const targets: Record<string, number> = {
             blank: 2,
-            passage: 2,
-            connector: 2,
-            underline: 2,
+            passage: 1,
+            connector: 1,
+            underline: 1,
             title: 1,
-            ordering: 1
+            ordering: 1,
+            sentence: 1,
+            mainIdea: 1,
+            purpose: 1
         };
 
         const selected: Question[] = [];

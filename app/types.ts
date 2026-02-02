@@ -5,7 +5,10 @@ export type QuestionType =
   | "ordering"
   | "underline"
   | "connector"
-  | "title";
+  | "title"
+  | "sentence"
+  | "mainIdea"
+  | "purpose";
 
 export interface Question {
   id: number;

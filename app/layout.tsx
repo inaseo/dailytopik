@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   title: "DAILY TOPIK",
   description: "Practice Korean in 10 Questions a Day",
   openGraph: {
-    images: ["/og-image.png"],
+    images: "/og-image.png",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: "/og-image.png",
   },
 };
 
